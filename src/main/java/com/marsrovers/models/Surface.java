@@ -1,30 +1,31 @@
 package com.marsrovers.models;
 
-import java.util.LinkedList;
+import lombok.Getter;
+import lombok.Setter;
 
-public class Surface {
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-    private int extremeX;
-    private int extremeY;
-    private LinkedList<Rover> rovers = new LinkedList<>();
+@Getter
+@Setter
+@Entity
+public class Surface implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public int getExtremeX() {
-        return extremeX;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
 
-    public void setExtremeX(int extremeX) {
-        this.extremeX = extremeX;
-    }
+    @NotNull
+    private Integer extremeX;
 
-    public int getExtremeY() {
-        return extremeY;
-    }
+    @NotNull
+    private Integer extremeY;
 
-    public void setExtremeY(int extremeY) {
-        this.extremeY = extremeY;
-    }
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "surface")
+    private Set<Rover> rovers = new HashSet<>();
 
-    public LinkedList<Rover> getRovers() {
-        return rovers;
-    }
 }

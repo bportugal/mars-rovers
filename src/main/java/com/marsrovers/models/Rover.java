@@ -1,70 +1,37 @@
 package com.marsrovers.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
+@Getter
+@Setter
 @Entity
 public class Rover implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @NotBlank
+    @NotNull
+    @Column(unique = true)
     @Size(min = 3)
     private String name;
 
-    @NotBlank
-    private int xPosition;
+    private Integer xPosition;
 
-    @NotBlank
-    private int yPosition;
+    private Integer yPosition;
 
-    @NotBlank
     private String direction;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "surface_id")
+    // adding the surface object to know the boundaries where the rover can go up to
+    private Surface surface;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getXPosition() {
-        return xPosition;
-    }
-
-    public void setXPosition(int xPosition) {
-        this.xPosition = xPosition;
-    }
-
-    public int getYPosition() {
-        return yPosition;
-    }
-
-    public void setYPosition(int yPosition) {
-        this.yPosition = yPosition;
-    }
-
-    public String getDirection() {
-        return direction;
-    }
-
-    public void setDirection(String direction) {
-        this.direction = direction;
-    }
 }
