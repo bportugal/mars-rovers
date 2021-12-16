@@ -7,14 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class RoverBasicDTO {
-
-    @JsonProperty("id")
-    private long id;
-
-    @NotBlank
-    @JsonProperty("name")
-    private String name;
+public class RoverResponseDTO {
 
     @NotNull
     @JsonProperty("xPosition")

@@ -2,6 +2,8 @@ package com.marsrovers.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 public class RoverGetSurfaceDTO {
@@ -10,5 +12,5 @@ public class RoverGetSurfaceDTO {
     private long id;
 
     @JsonProperty("surface")
-    private SurfaceShortDTO surface;
+    private SurfaceBasicDTO surface;
 }

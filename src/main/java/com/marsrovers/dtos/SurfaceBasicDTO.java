@@ -3,20 +3,19 @@ package com.marsrovers.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import java.math.BigDecimal;
+import javax.validation.constraints.NotNull;
 
 @Data
-public class SurfacePostDTO {
+public class SurfaceBasicDTO {
 
     @JsonProperty("id")
     private long id;
 
-    @NotBlank
+    @NotNull
     @JsonProperty("extremeX")
-    private BigDecimal extremeX;
+    private Integer extremeX;
 
-    @NotBlank
+    @NotNull
     @JsonProperty("extremeY")
-    private BigDecimal extremeY;
+    private Integer extremeY;
 }
