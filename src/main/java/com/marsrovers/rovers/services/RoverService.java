@@ -51,7 +51,7 @@ public class RoverService {
     }
 
     public RoverBasicDTO createRover(RoverCreationDTO roverCreationDTO) {
-        if ((roverRepository.findByName(roverCreationDTO.getName()) == null) || roverRepository.existsById(roverCreationDTO.getId())) {
+        if ((roverRepository.findByName(roverCreationDTO.getName()).size() > 0) || roverRepository.existsById(roverCreationDTO.getId())) {
             throw new AlreadyExistsEntityException("Rover already created");
         }
         return roverMapper.roverToRoverBasicDTO(roverRepository.saveAndFlush(roverMapper.roverCreationDTOToRover(roverCreationDTO)));
