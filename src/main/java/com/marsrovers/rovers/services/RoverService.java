@@ -1,6 +1,6 @@
 package com.marsrovers.rovers.services;
 
-import com.marsrovers.rovers.movement.RoverCommand;
+import com.marsrovers.rovers.movement.Commands;
 import com.marsrovers.rovers.movement.RoverMovement;
 import com.marsrovers.rovers.assembler.RoverModelAssembler;
 import com.marsrovers.exceptions.AlreadyExistsEntityException;
@@ -9,10 +9,15 @@ import com.marsrovers.rovers.dtos.*;
 import com.marsrovers.rovers.mappers.RoverMapper;
 import com.marsrovers.rovers.models.Rover;
 import com.marsrovers.rovers.repository.RoverRepository;
+import com.marsrovers.surfaces.dtos.SurfaceAddRoverDTO;
+import com.marsrovers.surfaces.dtos.SurfaceGetCompleteDTO;
+import com.marsrovers.surfaces.mapper.SurfaceMapper;
+import com.marsrovers.surfaces.model.Surface;
 import com.marsrovers.surfaces.services.SurfaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +39,9 @@ public class RoverService {
 
     @Autowired
     private SurfaceService surfaceService;
+
+    @Autowired
+    private SurfaceMapper surfaceMapper;
 
     public RoverGetCompleteDTO getRover(long id) {
         Rover rover = roverRepository.findById(id).<EntityNotFoundException>orElseThrow(() ->
@@ -87,9 +95,7 @@ public class RoverService {
 
     public RoverResponseDTO moveRover(RoverCommandDTO roverCommands) {
         Rover rover = roverRepository.getById(roverCommands.getId());
-        String[] commandsArray = roverCommands.getCommands().split("\\s+");
-        System.out.println(Arrays.toString(RoverCommand.values()));
-        System.out.println(commandsArray);
+        String[] commandsArray = roverCommands.getCommands().replaceAll("\\s+", "").split("(?!^)");
 
         for (String command: commandsArray) {
             if(command.isEmpty()) {
@@ -101,13 +107,20 @@ public class RoverService {
         return roverMapper.roverMappedAfterCommands(roverRepository.save(rover));
     }
 
-    public RoverGetSurfaceDTO addSurface(RoverGetSurfaceDTO roverDTO) {
-        Rover rover = roverRepository.findById(roverDTO.getId()).map(roverFound -> {
+    public RoverGetSurfaceDTO addSurface(Long surfaceId, long id, boolean roverAlreadyAddedToSurface) {
+        Rover rover = roverRepository.findById(id).map(roverFound -> {
             if (roverFound.getSurface() != null) {
                 throw new AlreadyExistsEntityException("There is already a surface on this rover");
             }
-            return roverRepository.save(roverMapper.roverSurfaceToRover(roverDTO));
-        }).orElseThrow(() -> new EntityNotFoundException("Rover not found: " + roverDTO.getId()));
+            SurfaceGetCompleteDTO surface = surfaceService.getSurface(surfaceId);
+            roverFound.setSurface(surfaceMapper.surfaceUpdateDTOToSurface(surface));
+            if (!roverAlreadyAddedToSurface) {
+                SurfaceAddRoverDTO surfaceAddRoverDTO = new SurfaceAddRoverDTO();
+                surfaceAddRoverDTO.setRoverIds(new ArrayList<Long>(Arrays.asList(roverFound.getId())));
+                surfaceService.addRovers(surfaceAddRoverDTO, surfaceId, true);
+            }
+            return roverRepository.save(roverFound);
+        }).orElseThrow(() -> new EntityNotFoundException("Rover not found: " + id));
         return roverMapper.roverToRoverSurfaceDTO(rover);
     }
 }

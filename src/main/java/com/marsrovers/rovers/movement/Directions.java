@@ -1,89 +1,113 @@
 package com.marsrovers.rovers.movement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.marsrovers.surfaces.model.Surface;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public enum Directions {
-    N {
+    N("N") {
         @Override
-        public String nextDirection(String movement) {
-            if (movement.equals("L")) {
-                return "W";
-            } else if (movement.equals("R")) {
-                return "E";
+        public Directions nextDirection(String command) {
+            if (command.equals("L")) {
+                return W;
+            } else if (command.equals("R")) {
+                return E;
             }
             return null;
         }
         @Override
-        public Integer move(Integer y, Surface surface) {
-            if ((y+1) > surface.getExtremeY()) {
-                return y;
+        public Map<String, Integer> nextPosition(Map<String, Integer> position, Surface surface) {
+            Integer y = position.get("Y");
+            if ((y+1) <= surface.getExtremeY()) {
+                position.put("Y", y+1);
             }
-            return y+1;
+            return position;
         }
     },
-    E {
+    E("E") {
         @Override
-        public String nextDirection(String movement) {
-            if (movement.equals("L")) {
-                return "N";
-            } else if (movement.equals("R")) {
-                return "S";
+        public Directions nextDirection(String command) {
+            if (command.equals("L")) {
+                return N;
+            } else if (command.equals("R")) {
+                return S;
             }
             return null;
         }
         @Override
-        public Integer move(Integer x, Surface surface) {
-            if ((x+1) > surface.getExtremeX()) {
-                return x;
+        public Map<String, Integer> nextPosition(Map<String, Integer> position, Surface surface) {
+            Integer x = position.get("X");
+            if ((x+1) <= surface.getExtremeX()) {
+                position.put("X", x+1);
             }
-            return x+1;
+            return position;
         }
     },
-    W {
+    W("W") {
         @Override
-        public String nextDirection(String movement) {
-            if (movement.equals("L")) {
-                return "S";
-            } else if (movement.equals("R")) {
-                return "N";
+        public Directions nextDirection(String command) {
+            if (command.equals("L")) {
+                return S;
+            } else if (command.equals("R")) {
+                return N;
             }
             return null;
         }
         @Override
-        public Integer move(Integer x, Surface surface) {
-            if ((x-1) < 0) {
-                return x;
+        public Map<String, Integer> nextPosition(Map<String, Integer> position, Surface surface) {
+            Integer x = position.get("X");
+            if ((x-1) >= 0) {
+                position.put("X", x-1);
             }
-            return x-1;
+            return position;
         }
     },
-    S {
+    S("S") {
         @Override
-        public String nextDirection(String movement) {
-            if (movement.equals("L")) {
-                return "E";
-            } else if (movement.equals("R")) {
-                return "W";
+        public Directions nextDirection(String command) {
+            if (command.equals("L")) {
+                return E;
+            } else if (command.equals("R")) {
+                return W;
             }
             return null;
         }
         @Override
-        public Integer move(Integer y, Surface surface) {
-            if ((y-1) < 0) {
-                return y;
+        public Map<String, Integer> nextPosition(Map<String, Integer> position, Surface surface) {
+            Integer y = position.get("Y");
+            if ((y-1) >= 0) {
+                position.put("Y", y-1);
             }
-            return y-1;
+            return position;
         }
     };
 
-    public abstract String nextDirection(String s);
+    private final String name;
 
-    public abstract Integer move(Integer position, Surface surface);
+    Directions(String name) {
+        this.name = name;
+    }
 
-    public static String rotate90(String direction) {
+    public String getName() {
+        return name;
+    }
+
+    @JsonCreator()
+    public static Directions getDirectionFromNameString(String value) {
+        try {
+            return Directions.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    public abstract Directions nextDirection(String command);
+
+    public abstract Map<String, Integer> nextPosition(Map<String, Integer> position, Surface surface);
+
+
+    /*public static String rotate90(String command) {
         switch (direction) {
             case "N":
                 return Directions.N.nextDirection(direction);
@@ -96,9 +120,9 @@ public enum Directions {
             default:
                 return "Direction not valid";
         }
-    }
+    }*/
 
-    public static Map<String, Integer> nextPosition(Integer x, Integer y, String direction, Surface surface) {
+    /*public static Map<String, Integer> nextPosition(Integer x, Integer y, String direction, Surface surface) {
         Map<String, Integer> position = new HashMap<>();
         switch (direction) {
             case "N":
@@ -120,6 +144,6 @@ public enum Directions {
             default:
                 return null;
         }
-    }
+    }*/
 
 }

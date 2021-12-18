@@ -92,13 +92,15 @@ public class SurfaceService {
         );
     }
 
-    public SurfaceGetCompleteDTO addRovers(SurfaceAddRoverDTO roversIdsDTO, long id) {
+    public SurfaceGetCompleteDTO addRovers(SurfaceAddRoverDTO roversIdsDTO, long id, boolean surfaceAlreadyAddedToRover) {
         Surface surface = surfaceMapper.surfaceUpdateDTOToSurface(getSurface(id));
         Set<Rover> rovers = new HashSet<>();
-        for (Integer roverId : roversIdsDTO.getRoverIds()) {
+        for (Long roverId : roversIdsDTO.getRoverIds()) {
             RoverGetCompleteDTO roverDTO = roverService.getRover(roverId);
             if (roverDTO != null) {
-                roverService.addSurface(roverMapper.roverCompleteToRoverSurface(roverDTO));
+                if (!surfaceAlreadyAddedToRover) {
+                    roverService.addSurface(surface.getId(), roverId, true);
+                }
                 rovers.add(roverMapper.roverCompleteDTOToRover(roverDTO));
             }
         }

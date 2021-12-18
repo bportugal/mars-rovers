@@ -19,7 +19,7 @@ public class Surface implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NotBlank(message = "Name is mandatory")
@@ -34,16 +34,6 @@ public class Surface implements Serializable {
     private Integer extremeY;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "surface")
-    private Set<Rover> rovers = new HashSet<>();
+    private Set<Rover> rovers;
 
-    @Override
-    public String toString() {
-        return "Surface{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", extremeX=" + extremeX +
-                ", extremeY=" + extremeY +
-                ", rovers=" + rovers +
-                '}';
-    }
 }

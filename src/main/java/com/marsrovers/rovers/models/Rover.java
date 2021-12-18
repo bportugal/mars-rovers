@@ -1,5 +1,6 @@
 package com.marsrovers.rovers.models;
 
+import com.marsrovers.rovers.movement.Directions;
 import com.marsrovers.surfaces.model.Surface;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ public class Rover implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @NotBlank(message = "Name is mandatory")
@@ -31,23 +32,12 @@ public class Rover implements Serializable {
     @NotNull(message = "yPosition is mandatory")
     private Integer yPosition;
 
-    @NotBlank(message = "Direction is mandatory")
-    private String direction;
+    @NotNull(message = "Direction is mandatory")
+    private Directions direction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "surface_id")
     // adding the surface object to know the boundaries where the rover can go up to
     private Surface surface;
 
-    @Override
-    public String toString() {
-        return "Rover{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", xPosition=" + xPosition +
-                ", yPosition=" + yPosition +
-                ", direction='" + direction + '\'' +
-                ", surface=" + surface +
-                '}';
-    }
 }

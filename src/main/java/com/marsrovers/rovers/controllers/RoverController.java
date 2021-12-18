@@ -23,27 +23,15 @@ public class RoverController {
     private RoverService roverService;
 
     @GetMapping(path = "/getRover/{id}", produces = {"application/json"})
-    @ApiOperation(value = "Returns a rover")
+    @ApiOperation(value = "Returns a specific rover")
     public ResponseEntity<RoverGetCompleteDTO> getRover(@PathVariable long id) {
-        try {
-            return ResponseEntity.ok(roverService.getRover(id));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(roverService.getRover(id));
     }
 
     @GetMapping(path = "/getRovers", produces = {"application/json"})
     @ApiOperation(value = "Returns all the rovers created")
     public ResponseEntity<List<RoverGetCompleteDTO>> getRovers() {
-        try {
-            List<RoverGetCompleteDTO> rovers = roverService.getRovers();
-            if (rovers.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            return ResponseEntity.ok(rovers);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(roverService.getRovers());
     }
 
     @PostMapping(path = "/create")
@@ -90,10 +78,10 @@ public class RoverController {
         return ResponseEntity.ok(roverService.moveRover(roverCommands));
     }
 
-    @PutMapping(value = "/addSurface")
+    @PutMapping(value = "/addSurface/{id}")
     @ApiOperation(value = "Add a surface for the rover")
-    public ResponseEntity<RoverGetSurfaceDTO> addSurface(@RequestBody RoverGetSurfaceDTO roverGetSurfaceDTO) {
-        return ResponseEntity.ok(roverService.addSurface(roverGetSurfaceDTO));
+    public ResponseEntity<RoverGetSurfaceDTO> addSurface(@RequestParam (value = "surfaceId") Long surfaceId, @PathVariable long id) {
+        return ResponseEntity.ok(roverService.addSurface(surfaceId, id, false));
     }
 
 }

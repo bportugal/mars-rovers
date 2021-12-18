@@ -2,13 +2,17 @@ package com.marsrovers.rovers.dtos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.marsrovers.rovers.movement.Directions;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-@Data
+@Getter
+@Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoverBasicDTO {
 
@@ -28,7 +32,7 @@ public class RoverBasicDTO {
     @JsonProperty("yPosition")
     private Integer yPosition;
 
-    @NotBlank(message = "Direction is mandatory")
+    @NotNull(message = "Direction is mandatory. Possible values: N, E, W, S")
     @JsonProperty("direction")
-    private String direction;
+    private Directions direction;
 }

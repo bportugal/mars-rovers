@@ -3,6 +3,7 @@ package com.marsrovers.surfaces.controller;
 import com.marsrovers.exceptions.ResponseHandler;
 import com.marsrovers.surfaces.dtos.*;
 import com.marsrovers.surfaces.services.SurfaceService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,20 +22,19 @@ public class SurfaceController {
     private SurfaceService surfaceService;
 
     @GetMapping(path = "/getSurface/{id}", produces = {"application/json"})
+    @ApiOperation(value = "Returns a specific surface")
     public ResponseEntity<SurfaceGetCompleteDTO> getSurface(@PathVariable long id) {
         return ResponseEntity.ok(surfaceService.getSurface(id));
     }
 
     @GetMapping(path = "/getSurfaces", produces = {"application/json"})
+    @ApiOperation(value = "Returns all the surfaces created")
     public ResponseEntity<List<SurfaceGetCompleteDTO>> getSurfaces() {
-        List<SurfaceGetCompleteDTO> surfaces = surfaceService.getSurfaces();
-        if (surfaces.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok(surfaces);
+        return ResponseEntity.ok(surfaceService.getSurfaces());
     }
 
     @PostMapping(path = "/create")
+    @ApiOperation(value = "Creates a surface")
     public ResponseEntity<SurfaceBasicDTO> createSurface(@Valid @RequestBody SurfaceCreationDTO surfaceCreationDTO) {
         SurfaceBasicDTO createdSurface = surfaceService.createSurface(surfaceCreationDTO);
         if (createdSurface == null) {
@@ -49,6 +49,7 @@ public class SurfaceController {
     }
 
     @DeleteMapping(path = "/delete/{id}")
+    @ApiOperation(value = "Deletes a surface")
     public ResponseEntity<Object> deleteSurface(@PathVariable long id) {
         try {
             String result = surfaceService.deleteSurface(id);
@@ -59,21 +60,25 @@ public class SurfaceController {
     }
 
     @GetMapping(path = "/getRovers/{id}", produces = {"application/json"})
+    @ApiOperation(value = "Returns the rovers of a specific surface")
     public ResponseEntity<SurfaceGetRoversDTO> getRovers(@PathVariable long id) {
         return ResponseEntity.ok(surfaceService.getRovers(id));
     }
 
     @GetMapping(path = "/getSurfaceBoundaries/{id}", produces = {"application/json"})
+    @ApiOperation(value = "Returns the edges of a specific surface")
     public ResponseEntity<SurfaceBasicDTO> getBoundaries(@PathVariable long id) {
         return ResponseEntity.ok(surfaceService.getBoundaries(id));
     }
 
-    @PostMapping(path = "/addRovers/{id}")
+    @PutMapping(path = "/addRovers/{id}")
+    @ApiOperation(value = "Add a list of rovers in a surface")
     public ResponseEntity<SurfaceGetCompleteDTO> addRovers(@RequestBody SurfaceAddRoverDTO roversIds, @PathVariable long id) {
-        return ResponseEntity.ok(surfaceService.addRovers(roversIds, id));
+        return ResponseEntity.ok(surfaceService.addRovers(roversIds, id, false));
     }
 
     @DeleteMapping(value = "/deleteAllRoversFromSurface/{id}")
+    @ApiOperation(value = "Deletes all rovers from a surface")
     public ResponseEntity<Object> deleteAllRoversFromSurface(@PathVariable long id) {
         try {
             String result = surfaceService.deleteAllRoversFromSurface(id);
