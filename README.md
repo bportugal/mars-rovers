@@ -16,7 +16,7 @@ A rover with position X, Y = 12, 12 when we try to add it to surface with extrem
 If you have a list of rovers and just some of them don't respect the surface's limits, the ones that match the criteria will be added, avoiding repetition.
 
 ### Rovers don't collide, neither go outside the limits of the surface:
-The rovers can not be on the same position, so if a rover is moving 
+The rovers can not be on the same position, nor being created where a rover is already present, so if a rover is moving 
 and detects that it will collide with another one or go over the surface's edge, it will stop and will move to the next command. For example:
 ```
 rover 1 -> x: 5, y: 1, direction: E
