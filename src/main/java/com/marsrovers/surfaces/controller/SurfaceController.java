@@ -13,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/surface")
@@ -73,8 +74,10 @@ public class SurfaceController {
 
     @PutMapping(path = "/addRovers/{id}")
     @ApiOperation(value = "Add a list of rovers in a surface")
-    public ResponseEntity<SurfaceGetCompleteDTO> addRovers(@RequestBody SurfaceAddRoverDTO roversIds, @PathVariable long id) {
-        return ResponseEntity.ok(surfaceService.addRovers(roversIds, id, false));
+    public ResponseEntity<Object> addRovers(@RequestBody SurfaceAddRoverDTO roversIds, @PathVariable long id) {
+        Map<String, String> roverStatus = surfaceService.addRovers(roversIds, id, false);
+        return ResponseHandler.generateResponse("Complete", HttpStatus.OK, roverStatus);
+        // return ResponseEntity.ok(surfaceService.addRovers(roversIds, id, false));
     }
 
     @DeleteMapping(value = "/deleteAllRoversFromSurface/{id}")

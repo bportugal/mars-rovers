@@ -60,25 +60,30 @@ public class RoverService {
 
     public RoverBasicDTO createRover(RoverCreationDTO roverCreationDTO) {
         if ((roverRepository.findByName(roverCreationDTO.getName()).size() > 0) || roverRepository.existsById(roverCreationDTO.getId())) {
-            throw new AlreadyExistsEntityException("Rover already created");
+            throw new AlreadyExistsEntityException("Rover already created.");
+        }
+        List<Rover> rovers = roverRepository.findAll();
+        for (Rover rov : rovers) {
+            if (rov.getXPosition().equals(roverCreationDTO.getXPosition()) && rov.getYPosition().equals(roverCreationDTO.getYPosition())) {
+                throw new IllegalArgumentException("There is already a rover in this position");
+            }
         }
         return roverMapper.roverToRoverBasicDTO(roverRepository.saveAndFlush(roverMapper.roverCreationDTOToRover(roverCreationDTO)));
     }
 
     public String deleteRover(long id) {
-        return deleteRoverFromSurface(id);
+        return deleteSurfaceOfRover(id);
     }
 
-    public String deleteRoverFromSurface(long id) {
+    private String deleteSurfaceOfRover(long id) {
         return roverRepository.findById(id).map(rover -> {
-            if (!surfaceService.canDeleteRoverFromSurface(rover)) {
-                throw new EntityNotFoundException("Rover " + id + " not found in this surface.");
+            Surface surface = rover.getSurface();
+            if (surface != null) {
+                surfaceService.deleteRoverFromSurface(surface, id);
             }
-            roverRepository.deleteById(rover.getId());
-            return "Rover was deleted";
-        }).<EntityNotFoundException>orElseThrow(() ->
-                new EntityNotFoundException("Rover not found to be deleted: " + id)
-        );
+            roverRepository.deleteById(id);
+            return "Rover was deleted.";
+        }).orElseThrow(() -> new EntityNotFoundException("Rover not found to be deleted: " + id));
     }
 
     public RoverGetSurfaceDTO getSurfaceFromRover(long id) {
@@ -97,30 +102,42 @@ public class RoverService {
         Rover rover = roverRepository.getById(roverCommands.getId());
         String[] commandsArray = roverCommands.getCommands().replaceAll("\\s+", "").split("(?!^)");
 
-        for (String command: commandsArray) {
-            if(command.isEmpty()) {
+        for (String command : commandsArray) {
+            if (command.isEmpty()) {
                 continue;
             }
             rover = roverMovement.moveRover(rover, command);
         }
-
         return roverMapper.roverMappedAfterCommands(roverRepository.save(rover));
     }
 
     public RoverGetSurfaceDTO addSurface(Long surfaceId, long id, boolean roverAlreadyAddedToSurface) {
         Rover rover = roverRepository.findById(id).map(roverFound -> {
             if (roverFound.getSurface() != null) {
-                throw new AlreadyExistsEntityException("There is already a surface on this rover");
+                String errorMessage = roverFound.getSurface().getId() == surfaceId ? "This rover is already in this surface." : "There is already a surface on this rover.";
+                throw new AlreadyExistsEntityException(errorMessage);
             }
             SurfaceGetCompleteDTO surface = surfaceService.getSurface(surfaceId);
+            if (!isRoverPositionValid(surface, roverFound)) {
+                throw new IllegalArgumentException("Rover " + roverFound.getId() + " position exceeds the surface boundaries.");
+            }
             roverFound.setSurface(surfaceMapper.surfaceUpdateDTOToSurface(surface));
             if (!roverAlreadyAddedToSurface) {
-                SurfaceAddRoverDTO surfaceAddRoverDTO = new SurfaceAddRoverDTO();
-                surfaceAddRoverDTO.setRoverIds(new ArrayList<Long>(Arrays.asList(roverFound.getId())));
-                surfaceService.addRovers(surfaceAddRoverDTO, surfaceId, true);
+                checkIfRoverAlreadyAdded(surfaceId, roverFound.getId());
             }
             return roverRepository.save(roverFound);
         }).orElseThrow(() -> new EntityNotFoundException("Rover not found: " + id));
         return roverMapper.roverToRoverSurfaceDTO(rover);
+    }
+
+    private boolean isRoverPositionValid(SurfaceGetCompleteDTO surface, Rover roverFound) {
+        return (surface.getExtremeX() >= roverFound.getXPosition() && surface.getExtremeY() >= roverFound.getYPosition());
+    }
+
+    private void checkIfRoverAlreadyAdded(long surfaceId, long roverId) {
+        SurfaceAddRoverDTO surfaceAddRoverDTO = new SurfaceAddRoverDTO();
+        surfaceAddRoverDTO.setRoverIds(new ArrayList<Long>(Arrays.asList(roverId)));
+        surfaceService.addRovers(surfaceAddRoverDTO, surfaceId, true);
+
     }
 }

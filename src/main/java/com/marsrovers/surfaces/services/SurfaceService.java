@@ -14,9 +14,7 @@ import com.marsrovers.surfaces.repository.SurfaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,8 +48,15 @@ public class SurfaceService {
     }
 
     public SurfaceBasicDTO createSurface(SurfaceCreationDTO surfaceCreationDTO) {
-        if ((surfaceRepository.findByName(surfaceCreationDTO.getName()) == null) || surfaceRepository.existsById(surfaceCreationDTO.getId())) {
-            throw new AlreadyExistsEntityException("Surface already created");
+        if ((!surfaceRepository.findByName(surfaceCreationDTO.getName()).isEmpty()) || surfaceRepository.existsById(surfaceCreationDTO.getId())) {
+            throw new AlreadyExistsEntityException("Surface already created.");
+        }
+        List<SurfaceGetCompleteDTO> surfaces = getSurfaces();
+        for (SurfaceGetCompleteDTO surface : surfaces) {
+            if (surface.getExtremeX().equals(surfaceCreationDTO.getExtremeX()) &&
+                    surface.getExtremeY().equals(surfaceCreationDTO.getExtremeY())) {
+                throw new AlreadyExistsEntityException("There is already a surface with these boundaries.");
+            }
         }
         return surfaceMapper.surfaceToSurfaceBasicDTO(surfaceRepository.saveAndFlush(surfaceMapper.surfaceCreationDTOToSurface(surfaceCreationDTO)));
     }
@@ -60,10 +65,10 @@ public class SurfaceService {
         //can not delete surface if rovers are present
         SurfaceGetRoversDTO surfaceDTO = getRovers(id);
         if (!surfaceDTO.getRovers().isEmpty()) {
-            throw new EntityNotFoundException("Surface " + id + " has rovers on it, it can't be deleted. You need to delete the rovers first");
+            throw new EntityNotFoundException("Surface " + id + " has rovers on it, it can't be deleted. You need to delete the rovers first.");
         }
         surfaceRepository.deleteById(id);
-        return "Surface was deleted";
+        return "Surface was deleted.";
     }
 
     public SurfaceGetRoversDTO getRovers(long id) {
@@ -72,53 +77,60 @@ public class SurfaceService {
         );
     }
 
-    public boolean canDeleteRoverFromSurface(Rover rover) {
-        Surface surface = rover.getSurface();
-        if (surface == null) {
-            return true;
-        }
-        Set<Rover> rovers = surface.getRovers();
-        if (rovers.isEmpty()) {
-            return false;
-        }
-        rovers.remove(rover);
-        surfaceRepository.save(surface);
-        return true;
-    }
-
     public SurfaceBasicDTO getBoundaries(long id) {
         return surfaceRepository.findById(id).map(surfaceMapper::surfaceToSurfaceBasicDTO).<EntityNotFoundException>orElseThrow(() ->
                 new EntityNotFoundException("Surface not found: " + id)
         );
     }
 
-    public SurfaceGetCompleteDTO addRovers(SurfaceAddRoverDTO roversIdsDTO, long id, boolean surfaceAlreadyAddedToRover) {
+    public Map<String, String> addRovers(SurfaceAddRoverDTO roversIdsDTO, long id, boolean surfaceAlreadyAddedToRover) {
         Surface surface = surfaceMapper.surfaceUpdateDTOToSurface(getSurface(id));
         Set<Rover> rovers = new HashSet<>();
+        Map<String, String> roversStatus = new TreeMap<>();
         for (Long roverId : roversIdsDTO.getRoverIds()) {
-            RoverGetCompleteDTO roverDTO = roverService.getRover(roverId);
-            if (roverDTO != null) {
-                if (!surfaceAlreadyAddedToRover) {
-                    roverService.addSurface(surface.getId(), roverId, true);
+            try {
+                RoverGetCompleteDTO roverDTO = roverService.getRover(roverId);
+                if (roverDTO != null) {
+                    if (!surfaceAlreadyAddedToRover) { // if rover doesn't have the surface, first add it, then save the rovers set with the update objects
+                        roverService.addSurface(surface.getId(), roverId, true);
+                        roversStatus.put(roverId + " Success", "Rover " + roverId + " successfully added");
+                    }
+                    rovers.add(roverMapper.roverCompleteDTOToRover(roverDTO));
                 }
-                rovers.add(roverMapper.roverCompleteDTOToRover(roverDTO));
+            } catch (Exception e) {
+                roversStatus.put(roverId + " Fail", e.getMessage());
             }
         }
-        surface.setRovers(rovers);
-        surfaceRepository.save(surface);
-        return getSurface(id);
+
+        if (!rovers.isEmpty()) {
+            surface.setRovers(rovers);
+            surfaceRepository.save(surface);
+        }
+        return roversStatus;
     }
 
     public String deleteAllRoversFromSurface(long id) {
         return surfaceRepository.findById(id).map(surface -> {
-            for (Rover rover : surface.getRovers()) {
-                roverService.deleteRoverFromSurface(rover.getId());
+            if (surface.getRovers().isEmpty()) {
+                throw new EntityNotFoundException("This surface has no rovers.");
             }
-            /*surface.setRovers(null);
-            surfaceRepository.save(surface);*/
-            return "Rovers from surface were deleted";
+            Set<Rover> rovers = surface.getRovers();
+            rovers.clear();
+            surfaceRepository.save(surface);
+            return "Rovers from surface were deleted.";
         }).<EntityNotFoundException>orElseThrow(() ->
                 new EntityNotFoundException("Surface not found: " + id)
         );
+    }
+
+    public void deleteRoverFromSurface(Surface surface, long roverId) {
+        Set<Rover> rovers = surface.getRovers();
+        for (Rover rover : rovers) {
+            if (rover.getId() == roverId) {
+                rovers.remove(rover);
+                surfaceRepository.save(surface);
+                break;
+            }
+        }
     }
 }
