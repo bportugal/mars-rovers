@@ -1,10 +1,13 @@
-package com.marsrovers.models;
+package com.marsrovers.surfaces.model;
 
+import com.marsrovers.rovers.models.Rover;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,8 +19,13 @@ public class Surface implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @NotBlank(message = "Name is mandatory")
+    @Column(unique = true)
+    @Size(min = 3)
+    private String name;
 
     @NotNull
     private Integer extremeX;
@@ -26,6 +34,6 @@ public class Surface implements Serializable {
     private Integer extremeY;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "surface")
-    private Set<Rover> rovers = new HashSet<>();
+    private Set<Rover> rovers;
 
 }

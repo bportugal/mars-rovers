@@ -1,9 +1,12 @@
-package com.marsrovers.models;
+package com.marsrovers.rovers.models;
 
+import com.marsrovers.rovers.movement.Directions;
+import com.marsrovers.surfaces.model.Surface;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -15,19 +18,22 @@ public class Rover implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotNull
+    @NotBlank(message = "Name is mandatory")
     @Column(unique = true)
     @Size(min = 3)
     private String name;
 
+    @NotNull(message = "xPosition is mandatory")
     private Integer xPosition;
 
+    @NotNull(message = "yPosition is mandatory")
     private Integer yPosition;
 
-    private String direction;
+    @NotNull(message = "Direction is mandatory")
+    private Directions direction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "surface_id")
