@@ -10,10 +10,7 @@ If you have a list of rovers and just some of them don't respect the surface's l
 
 ### Deleting a rover or a surface
 
-For you to delete a surface, you need to delete its rovers first and once you delete a rover, the code will remove it from the list of rovers on the surface it belongs
-
-A rover with position X, Y = 12, 12 when we try to add it to surface with extremes 5, 5 will not be added.
-If you have a list of rovers and just some of them don't respect the surface's limits, the ones that match the criteria will be added, avoiding repetition.
+For you to delete a surface, you need to delete its rovers first. Once you delete a rover, the code will remove it from the list of rovers on the surface it belongs
 
 ### Rovers don't collide, neither go outside the limits of the surface:
 The rovers can not be on the same position, nor being created where a rover is already present, so if a rover is moving 
